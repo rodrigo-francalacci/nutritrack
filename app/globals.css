@@ -1,0 +1,1578 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Windows 98 System Fonts */
+@font-face {
+  font-family: 'MS Sans Serif';
+  src: local('MS Sans Serif'), local('Microsoft Sans Serif'), local('Tahoma'), local('Arial'), sans-serif;
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer base {
+  :root {
+    /* Windows 98 Color Palette */
+    --win98-face: #c0c0c0;           /* Standard button/dialog face */
+    --win98-shadow: #808080;         /* Dark shadow for 3D effect */
+    --win98-dark-shadow: #404040;    /* Darker shadow for depth */
+    --win98-light: #dfdfdf;          /* Light highlight for 3D effect */
+    --win98-white: #ffffff;          /* White highlights */
+    --win98-text: #000000;           /* Black text */
+    --win98-active-title: #0a246a;   /* Active title bar blue */
+    --win98-active-title-text: #ffffff; /* Active title text */
+    --win98-inactive-title: #808080;  /* Inactive title bar gray */
+    --win98-window: #c0c0c0;         /* Window background */
+    --win98-field: #ffffff;          /* Text field background */
+    --win98-selected: #316ac5;       /* Selected item background */
+    --win98-selected-text: #ffffff;  /* Selected item text */
+    --win98-gray-text: #6d6d6d;      /* Disabled/gray text */
+    
+    /* Theme variables using Windows 98 colors */
+    --background: 0 0% 75%;           /* #c0c0c0 */
+    --foreground: 0 0% 0%;            /* #000000 */
+    --card: 0 0% 75%;                 /* #c0c0c0 */
+    --card-foreground: 0 0% 0%;       /* #000000 */
+    --popover: 0 0% 75%;              /* #c0c0c0 */
+    --popover-foreground: 0 0% 0%;    /* #000000 */
+    --primary: 214 56% 41%;           /* #316ac5 */
+    --primary-foreground: 0 0% 100%;  /* #ffffff */
+    --secondary: 0 0% 50%;            /* #808080 */
+    --secondary-foreground: 0 0% 100%; /* #ffffff */
+    --muted: 0 0% 87%;                /* #dfdfdf */
+    --muted-foreground: 0 0% 43%;     /* #6d6d6d */
+    --accent: 214 56% 41%;            /* #316ac5 */
+    --accent-foreground: 0 0% 100%;   /* #ffffff */
+    --destructive: 0 65% 51%;         /* #cc3333 */
+    --destructive-foreground: 0 0% 100%; /* #ffffff */
+    --border: 0 0% 50%;               /* #808080 */
+    --input: 0 0% 100%;               /* #ffffff */
+    --ring: 214 56% 41%;              /* #316ac5 */
+    --radius: 0px;                    /* No border radius for sharp edges */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .win98-body {
+    background-color: var(--win98-face);
+    color: var(--win98-text);
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  
+  .win98-app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .win98-main-content {
+    flex: 1;
+    padding: 2px;
+    background-color: var(--win98-face);
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  /* CORE WINDOWS 98 COMPONENTS */
+  
+  /* Windows 98 Button Styles */
+  .win98-button {
+    background-color: var(--win98-face);
+    border: 2px outset var(--win98-face);
+    color: var(--win98-text);
+    padding: 1px 6px 2px 6px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    min-height: 19px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1px;
+  }
+  
+  .win98-button:hover {
+    background-color: #c8c8c8;
+  }
+  
+  .win98-button:active {
+    border: 2px inset var(--win98-face);
+    padding: 2px 5px 1px 7px;
+  }
+  
+  .win98-button:disabled {
+    color: var(--win98-gray-text);
+    cursor: default;
+  }
+  
+  /* Windows 98 Input Styles */
+  .win98-input {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    color: var(--win98-text);
+    padding: 1px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    min-height: 17px;
+    line-height: 1.2;
+    max-width: 100%;
+  }
+  
+  .win98-input:focus {
+    outline: none;
+    border: 2px inset var(--win98-face);
+  }
+  
+  .win98-textarea {
+    resize: vertical;
+    min-height: 45px;
+  }
+  
+  /* Windows 98 Select Styles */
+  .win98-select {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    color: var(--win98-text);
+    padding: 1px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    min-height: 17px;
+  }
+  
+  /* Windows 98 Panel/Card Styles */
+  .win98-panel {
+    background-color: var(--win98-face);
+    border: 2px outset var(--win98-face);
+    padding: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-inset-panel {
+    background-color: var(--win98-face);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+  }
+  
+  /* Windows 98 Title Bar */
+  .win98-title-bar {
+    background: linear-gradient(90deg, var(--win98-active-title) 0%, #1084d0 100%);
+    color: var(--win98-active-title-text);
+    padding: 1px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    border: none;
+    min-height: 16px;
+    display: flex;
+    align-items: center;
+    margin: 0 0 2px 0;
+  }
+  
+  /* Windows 98 Menu Bar */
+  .win98-menu-bar {
+    background-color: var(--win98-face);
+    border-bottom: 1px solid var(--win98-shadow);
+    padding: 2px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+  }
+  
+  /* Windows 98 Status Bar */
+  .win98-status-bar {
+    background-color: var(--win98-face);
+    border: 1px inset var(--win98-face);
+    padding: 1px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    min-height: 16px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Windows 98 List Items */
+  .win98-list-item {
+    background-color: var(--win98-field);
+    border: 1px solid var(--win98-shadow);
+    padding: 2px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    margin: 1px 0;
+    line-height: 1.2;
+  }
+  
+  .win98-list-item:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+  
+  /* Windows 98 Table Styles */
+  .win98-table {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 2px 0;
+  }
+  
+  .win98-table th,
+  .win98-table td {
+    border: 1px solid var(--win98-shadow);
+    padding: 1px 4px;
+    text-align: left;
+    line-height: 1.2;
+  }
+  
+  .win98-table th {
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    font-weight: normal;
+    min-height: 16px;
+  }
+  
+  .win98-table tr {
+    min-height: 16px;
+  }
+  
+  .win98-table td {
+    min-height: 16px;
+  }
+  
+  /* CONDENSED LAYOUTS */
+  
+  /* Main container */
+  .win98-container {
+    padding: 4px;
+    margin: 0 auto;
+    max-width: 1200px;
+    width: 100%;
+  }
+  
+  /* Form layouts */
+  .win98-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+  }
+  
+  .win98-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-form-row-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .win98-label {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: var(--win98-text);
+    margin: 0;
+  }
+  
+  /* Navigation styles */
+  .win98-nav {
+    background-color: var(--win98-face);
+    border: 2px outset var(--win98-face);
+    padding: 2px;
+    margin: 0;
+    display: flex;
+    gap: 2px;
+  }
+  
+  .win98-nav-item {
+    padding: 2px 6px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: var(--win98-text);
+    border: 1px outset var(--win98-face);
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  .win98-nav-item:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+  
+  .win98-nav-item.active {
+    border: 1px inset var(--win98-face);
+    background-color: var(--win98-light);
+  }
+  
+  /* RECIPE EDITOR SPECIFIC STYLES */
+  
+  .win98-nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    margin: 2px 0;
+  }
+  
+  .win98-nutrition-item {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+    text-align: center;
+    min-height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .win98-nutrition-value {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--win98-text);
+    line-height: 1.1;
+  }
+  
+  .win98-nutrition-label {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+    line-height: 1.1;
+  }
+  
+  .win98-ingredients-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .win98-ingredients-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-ingredient-row {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-ingredient-main {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .win98-ingredient-name {
+    flex: 1;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: var(--win98-text);
+    font-weight: bold;
+  }
+  
+  .win98-ingredient-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  .win98-quantity-input {
+    width: 60px;
+    min-width: 60px;
+  }
+  
+  .win98-unit-select {
+    width: 80px;
+    min-width: 80px;
+  }
+  
+  .win98-delete-button {
+    padding: 1px 4px;
+    min-height: 17px;
+  }
+  
+  .win98-nutrition-contribution {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background-color: var(--win98-face);
+    border: 1px inset var(--win98-face);
+    padding: 2px;
+  }
+  
+  .win98-contribution-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  
+  .win98-contribution-value {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--win98-text);
+    line-height: 1.1;
+  }
+  
+  .win98-contribution-label {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 9px;
+    color: var(--win98-gray-text);
+    line-height: 1.1;
+  }
+  
+  .win98-empty-state {
+    text-align: center;
+    padding: 8px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: var(--win98-gray-text);
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+  }
+  
+  /* INGREDIENTS TABLE STYLES */
+  
+  .win98-ingredients-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    margin: 2px 0;
+  }
+  
+  .win98-ingredients-table th {
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 1px 4px;
+    text-align: left;
+    font-weight: normal;
+    min-height: 16px;
+  }
+  
+  .win98-ingredients-table td {
+    border: 1px solid var(--win98-shadow);
+    padding: 1px 4px;
+    min-height: 16px;
+    line-height: 1.2;
+  }
+  
+  .win98-ingredients-table tr {
+    min-height: 16px;
+  }
+  
+  .win98-ingredients-table tr:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+  
+  /* EXERCISE PLANNER STYLES */
+  
+  .win98-exercise-row {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .win98-exercise-name {
+    flex: 1;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  
+  .win98-exercise-input {
+    width: 50px;
+    min-width: 50px;
+  }
+  
+  /* HABIT TRACKER STYLES */
+  
+  .win98-habit-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: var(--win98-shadow);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+  }
+  
+  .win98-habit-cell {
+    background-color: var(--win98-field);
+    border: 1px outset var(--win98-face);
+    padding: 1px;
+    text-align: center;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  
+  .win98-habit-cell:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+  
+  .win98-habit-cell.completed {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+    border: 1px inset var(--win98-face);
+  }
+  
+  /* DAILY TRACKING STYLES */
+  
+  .win98-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-metric-item {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-metric-label {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+  }
+  
+  .win98-metric-value {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--win98-text);
+  }
+  
+  /* Windows 98 specific text sizes */
+  .win98-text-xs { font-size: 10px; line-height: 1.1; }
+  .win98-text-sm { font-size: 11px; line-height: 1.2; }
+  .win98-text-base { font-size: 11px; line-height: 1.2; }
+  .win98-text-lg { font-size: 12px; line-height: 1.2; }
+  .win98-text-xl { font-size: 13px; line-height: 1.2; }
+  
+  /* RESPONSIVE GRID ADJUSTMENTS */
+  
+  @media (max-width: 768px) {
+    .win98-nutrition-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .win98-nutrition-contribution {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .win98-metrics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .win98-nutrition-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .win98-ingredient-main {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+    
+    .win98-ingredient-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+  
+  /* ADDITIONAL COMPONENT STYLES */
+  
+  /* Table container */
+  .win98-table-container {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 0;
+    margin: 2px 0;
+  }
+  
+  /* Ingredient name styling */
+  .win98-ingredient-name {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+    line-height: 1.2;
+  }
+  
+  .win98-ingredient-notes {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+    line-height: 1.1;
+  }
+  
+  /* Units info */
+  .win98-units-info {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    line-height: 1.1;
+  }
+  
+  .win98-gray-text {
+    color: var(--win98-gray-text);
+  }
+  
+  /* Actions */
+  .win98-actions {
+    display: flex;
+    gap: 2px;
+  }
+  
+  /* Recipes grid */
+  .win98-recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-recipe-card {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-recipe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  
+  .win98-recipe-name {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+    flex: 1;
+  }
+  
+  .win98-recipe-actions {
+    display: flex;
+    gap: 2px;
+  }
+  
+  .win98-recipe-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+  
+  .win98-recipe-scaling {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+  }
+  
+  .win98-recipe-instructions {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-text);
+    line-height: 1.2;
+  }
+  
+  .win98-recipe-footer {
+    border-top: 1px solid var(--win98-shadow);
+    padding-top: 2px;
+    margin-top: 2px;
+  }
+  
+  /* Tabs */
+  .win98-tabs {
+    display: flex;
+    gap: 0;
+    margin: 2px 0;
+    border-bottom: 2px solid var(--win98-shadow);
+  }
+  
+  .win98-tab {
+    background-color: var(--win98-face);
+    border: 2px outset var(--win98-face);
+    border-bottom: none;
+    color: var(--win98-text);
+    padding: 2px 8px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  .win98-tab:hover {
+    background-color: #c8c8c8;
+  }
+  
+  .win98-tab.active {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    border-bottom: 2px solid var(--win98-field);
+    margin-bottom: -2px;
+  }
+  
+  .win98-tab-content {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    margin: 0;
+  }
+  
+  /* Exercise components */
+  .win98-exercises-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-exercise-card {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .win98-exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  
+  .win98-exercise-name {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+    flex: 1;
+  }
+  
+  .win98-exercise-actions {
+    display: flex;
+    gap: 2px;
+  }
+  
+  .win98-exercise-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+  
+  .win98-exercise-description {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-text);
+    line-height: 1.2;
+  }
+  
+  .win98-exercise-muscles {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+    line-height: 1.1;
+  }
+  
+  /* Workout planner */
+  .win98-workout-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin: 2px 0;
+  }
+  
+  .win98-date-input {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    color: var(--win98-text);
+    padding: 1px 4px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    min-height: 17px;
+    width: 120px;
+  }
+  
+  .win98-workout-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 2px 0;
+  }
+  
+  .win98-workout-item {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .win98-workout-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  
+  .win98-workout-name {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+  }
+  
+  .win98-workout-date {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+  }
+  
+  .win98-workout-actions {
+    display: flex;
+    gap: 2px;
+  }
+  
+  /* HABIT TRACKER STYLES */
+  
+  .win98-habits-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* Matrix Layout Styles */
+  .win98-habit-matrix-container {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 0;
+    margin: 2px 0;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .win98-habit-matrix {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    min-width: 800px; /* Ensure horizontal scrolling on small screens */
+  }
+
+  .win98-habit-matrix-header {
+    display: table-header-group;
+    background-color: var(--win98-face);
+  }
+
+  .win98-habit-matrix-header-row {
+    display: table-row;
+  }
+
+  .win98-habit-matrix-header-cell {
+    display: table-cell;
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 2px 4px;
+    text-align: center;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--win98-text);
+    min-width: 20px;
+    vertical-align: middle;
+  }
+
+  .win98-habit-matrix-header-cell:first-child {
+    text-align: left;
+    min-width: 120px;
+    max-width: 120px;
+    width: 120px;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+  }
+
+  .win98-habit-matrix-body {
+    display: table-row-group;
+  }
+
+  .win98-habit-matrix-row {
+    display: table-row;
+  }
+
+  .win98-habit-matrix-row:hover {
+    background-color: rgba(49, 106, 197, 0.1);
+  }
+
+  .win98-habit-matrix-cell {
+    display: table-cell;
+    border: 1px solid var(--win98-shadow);
+    padding: 1px;
+    text-align: center;
+    min-height: 18px;
+    min-width: 20px;
+    vertical-align: middle;
+  }
+
+  .win98-habit-matrix-name-cell {
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 1px 4px;
+    text-align: left;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--win98-text);
+    min-width: 120px;
+    max-width: 120px;
+    width: 120px;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    height: 14px;
+    line-height: 12px;
+  }
+
+  .win98-habit-matrix-day-cell {
+    display: table-cell;
+    background-color: var(--win98-field);
+    border: 1px outset var(--win98-face);
+    cursor: pointer;
+    text-align: center;
+    min-height: 14px;
+    height: 14px;
+    min-width: 20px;
+    width: 20px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 8px;
+    color: var(--win98-text);
+    vertical-align: middle;
+    position: relative;
+    padding: 0;
+  }
+
+  .win98-habit-matrix-day-cell:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+
+  .win98-habit-matrix-day-cell.completed {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+    border: 1px inset var(--win98-face);
+  }
+
+  .win98-habit-matrix-day-cell.completed::after {
+    content: '✓';
+    font-size: 10px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .win98-habit-matrix-stats {
+    display: table-cell;
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 1px 4px;
+    text-align: center;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 8px;
+    color: var(--win98-gray-text);
+    min-width: 40px;
+    vertical-align: middle;
+    height: 14px;
+    line-height: 12px;
+  }
+
+  .win98-habit-actions-cell {
+    display: table-cell;
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 0px 2px;
+    text-align: center;
+    min-width: 25px;
+    vertical-align: middle;
+    height: 14px;
+    line-height: 12px;
+  }
+
+  /* Legacy styles for backward compatibility */
+  .win98-habit-section {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    margin: 2px 0;
+  }
+
+  .win98-habit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+
+  .win98-habit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .win98-habit-name {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+  }
+
+  .win98-habit-description {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+  }
+
+  .win98-habit-actions {
+    display: flex;
+    gap: 2px;
+  }
+
+  .win98-habit-calendar {
+    margin: 2px 0;
+  }
+
+  .win98-habit-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: var(--win98-shadow);
+    border: 2px inset var(--win98-face);
+    padding: 2px;
+  }
+
+  .win98-habit-cell {
+    background-color: var(--win98-field);
+    border: 1px outset var(--win98-face);
+    padding: 1px;
+    text-align: center;
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 9px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .win98-habit-cell:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+  }
+
+  .win98-habit-cell.completed {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+    border: 1px inset var(--win98-face);
+  }
+
+  .win98-habit-stats {
+    border-top: 1px solid var(--win98-shadow);
+    padding-top: 2px;
+    margin-top: 2px;
+  }
+  
+  /* DAILY TRACKING STYLES */
+  
+  .win98-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 2px 0;
+  }
+  
+  .win98-history-item {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  
+  .win98-history-date {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+    display: flex;
+    align-items: center;
+  }
+  
+  .win98-history-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .win98-history-section {
+    background-color: var(--win98-face);
+    border: 1px inset var(--win98-face);
+    padding: 4px;
+  }
+  
+  .win98-history-section-title {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--win98-text);
+    margin-bottom: 2px;
+  }
+  
+  .win98-history-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 2px;
+  }
+  
+  .win98-history-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 2px;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  
+  .win98-history-metric-label {
+    color: var(--win98-gray-text);
+  }
+  
+  .win98-history-metric-value {
+    color: var(--win98-text);
+    font-weight: bold;
+  }
+  
+  /* EXERCISE CONTROLS */
+  
+  .win98-exercise-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  /* RESPONSIVE ADJUSTMENTS */
+  
+  @media (max-width: 768px) {
+    .win98-recipes-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .win98-exercises-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .win98-workout-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .win98-date-input {
+      width: 100%;
+    }
+    
+    .win98-habit-grid {
+      grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .win98-habit-cell {
+      min-height: 16px;
+      font-size: 8px;
+    }
+
+    /* Matrix responsive styles */
+    .win98-habit-matrix-day-cell {
+      min-width: 18px;
+      width: 18px;
+      font-size: 7px;
+    }
+
+    .win98-habit-matrix-name-cell {
+      min-width: 100px;
+      max-width: 100px;
+      width: 100px;
+      font-size: 9px;
+    }
+
+    .win98-habit-matrix-header-cell:first-child {
+      min-width: 100px;
+      max-width: 100px;
+      width: 100px;
+    }
+    
+    .win98-history-metrics {
+      grid-template-columns: 1fr;
+    }
+    
+    .win98-exercise-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .win98-habit-grid {
+      gap: 0;
+    }
+    
+    .win98-habit-cell {
+      min-height: 14px;
+      font-size: 7px;
+    }
+
+    /* Matrix responsive styles for small screens */
+    .win98-habit-matrix-day-cell {
+      min-width: 16px;
+      width: 16px;
+      font-size: 6px;
+    }
+
+    .win98-habit-matrix-name-cell {
+      min-width: 80px;
+      max-width: 80px;
+      width: 80px;
+      font-size: 8px;
+    }
+
+    .win98-habit-matrix-header-cell:first-child {
+      min-width: 80px;
+      max-width: 80px;
+      width: 80px;
+    }
+    
+    .win98-metrics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* HOME PAGE STYLES */
+  
+  .win98-home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-home-card {
+    background-color: var(--win98-field);
+    border: 2px outset var(--win98-face);
+    padding: 4px;
+    text-decoration: none;
+    color: var(--win98-text);
+    display: block;
+    transition: none;
+  }
+  
+  .win98-home-card:hover {
+    background-color: var(--win98-selected);
+    color: var(--win98-selected-text);
+    border: 2px inset var(--win98-face);
+  }
+  
+  .win98-home-card-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+  
+  .win98-home-card-icon {
+    background-color: var(--win98-face);
+    border: 1px outset var(--win98-face);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .win98-home-card-title {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: inherit;
+  }
+  
+  .win98-home-card-content {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: inherit;
+    line-height: 1.3;
+  }
+  
+  .win98-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 4px;
+    margin: 2px 0;
+  }
+  
+  .win98-stat-item {
+    background-color: var(--win98-field);
+    border: 2px inset var(--win98-face);
+    padding: 4px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  
+  .win98-stat-value {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--win98-text);
+  }
+  
+  .win98-stat-label {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 10px;
+    color: var(--win98-gray-text);
+  }
+  
+  .win98-getting-started {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .win98-getting-started-text {
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: var(--win98-text);
+    line-height: 1.3;
+  }
+  
+  .win98-getting-started-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  @media (max-width: 768px) {
+    .win98-home-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .win98-stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .win98-getting-started-actions {
+      flex-direction: column;
+    }
+  }
+}
+
+@layer components {
+  /* Override shadcn/ui components with Windows 98 styling */
+  .btn {
+    @apply win98-button;
+  }
+  
+  .input {
+    @apply win98-input;
+  }
+  
+  .card {
+    @apply win98-panel;
+  }
+  
+  .select {
+    @apply win98-select;
+  }
+  
+  .table {
+    @apply win98-table;
+  }
+}
+
+/* Modal Styles */
+.win98-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.win98-modal {
+  background-color: var(--win98-face);
+  border: 2px outset var(--win98-face);
+  min-width: 400px;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+}
+
+.win98-modal-content {
+  padding: 4px;
+}
+
+.win98-close-button {
+  background-color: var(--win98-face);
+  border: 1px outset var(--win98-face);
+  color: var(--win98-text);
+  font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0 4px;
+  cursor: pointer;
+  width: 16px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win98-close-button:hover {
+  background-color: var(--win98-selected);
+  color: var(--win98-selected-text);
+}
+
+.win98-close-button:active {
+  border: 1px inset var(--win98-face);
+}
+
+/* Muscle Tags */
+.win98-muscle-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.win98-muscle-tag {
+  background-color: var(--win98-selected);
+  color: var(--win98-selected-text);
+  border: 1px outset var(--win98-selected);
+  padding: 1px 4px;
+  font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.win98-muscle-tag-remove {
+  background: none;
+  border: none;
+  color: var(--win98-selected-text);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win98-muscle-tag-remove:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Select Dropdown */
+.win98-select {
+  background-color: var(--win98-field);
+  border: 1px inset var(--win98-face);
+  color: var(--win98-text);
+  font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+  font-size: 11px;
+  padding: 1px 2px;
+  width: 100%;
+  height: 22px;
+}
+
+.win98-select:focus {
+  outline: none;
+  border: 1px inset var(--win98-face);
+}
