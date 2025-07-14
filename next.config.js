@@ -1,18 +1,10 @@
-const path = require('path');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: process.env.NEXT_DIST_DIR || '.next',
-  output: process.env.NEXT_OUTPUT_MODE,
-  experimental: {
-    outputFileTracingRoot: path.join(__dirname, '../'),
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
+  // The 'eslint' and 'typescript' settings are generally not needed
+  // unless you have a specific reason to override the defaults.
+  // It's cleaner to remove them.
+  
+  // The 'images: { unoptimized: true }' is fine if you intend to not use Next.js Image Optimization.
   images: { unoptimized: true },
 };
 
