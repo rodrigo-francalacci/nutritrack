@@ -1,0 +1,187 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/nutrition-fitness-app/app/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+}
+
+model Ingredient {
+  id          String   @id @default(cuid())
+  name        String
+  protein     Float    @default(0) // per gram
+  carbs       Float    @default(0) // per gram
+  fats        Float    @default(0) // per gram
+  calories    Float    @default(0) // per gram
+  fiber       Float    @default(0) // per gram
+  notes       String?
+  image1      String?  // base64 or URL
+  image2      String?  // base64 or URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  customUnits       CustomUnit[]
+  recipeIngredients RecipeIngredient[]
+
+  @@map("ingredients")
+}
+
+model CustomUnit {
+  id             String   @id @default(cuid())
+  ingredientId   String
+  unitName       String   // e.g., "tablespoon", "cup"
+  gramsEquivalent Float   // how many grams this unit represents
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  ingredient        Ingredient         @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  recipeIngredients RecipeIngredient[]
+
+  @@unique([ingredientId, unitName])
+  @@map("custom_units")
+}
+
+model Recipe {
+  id            String   @id @default(cuid())
+  name          String
+  instructions  String?
+  photos        Json?    // array of {url: string, caption: string}
+  scalingFactor Float    @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  ingredients RecipeIngredient[]
+
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  id           String   @id @default(cuid())
+  recipeId     String
+  ingredientId String
+  quantity     Float
+  unitId       String?  // null means grams
+  order        Int      @default(0) // to maintain ingredient order
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  recipe     Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       CustomUnit? @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  @@map("recipe_ingredients")
+}
+
+model DailyNutrition {
+  id           String   @id @default(cuid())
+  date         DateTime
+  calories     Float?
+  protein      Float?
+  carbs        Float?
+  fats         Float?
+  fiber        Float?
+  water        Float?   // liters
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([date])
+  @@map("daily_nutrition")
+}
+
+model DailyBodyMetrics {
+  id               String   @id @default(cuid())
+  date             DateTime
+  weight           Float?   // kg
+  bodyFat          Float?   // percentage
+  muscleMass       Float?   // kg
+  visceralFat      Float?   // percentage
+  bmi              Float?
+  bodyWater        Float?   // percentage
+  boneMass         Float?   // kg
+  basalMetabolism  Float?   // kcal
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([date])
+  @@map("daily_body_metrics")
+}
+
+model Exercise {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  photo           String?  // base64 or URL
+  video           String?  // URL or base64
+  musclesInvolved String[] // array of muscle names
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  workoutExercises WorkoutExercise[]
+
+  @@map("exercises")
+}
+
+model WorkoutPlan {
+  id        String   @id @default(cuid())
+  name      String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  exercises WorkoutExercise[]
+
+  @@map("workout_plans")
+}
+
+model WorkoutExercise {
+  id            String   @id @default(cuid())
+  workoutPlanId String
+  exerciseId    String
+  reps          Int?
+  series        Int?
+  weight        Float?   // in kg
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  exercise    Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@map("workout_exercises")
+}
+
+model Habit {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  completions HabitCompletion[]
+
+  @@map("habits")
+}
+
+model HabitCompletion {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      DateTime
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@map("habit_completions")
+}
