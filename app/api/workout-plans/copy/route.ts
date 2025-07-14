@@ -1,6 +1,7 @@
-
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+// Import the type for WorkoutExercise from the Prisma client
+import type { WorkoutExercise } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +59,8 @@ export async function POST(request: Request) {
     })
 
     // Copy all exercises from the source workout
-    const exercisePromises = sourceWorkout.exercises.map((exercise) =>
+    // FIX: Explicitly type the 'exercise' parameter
+    const exercisePromises = sourceWorkout.exercises.map((exercise: WorkoutExercise) =>
       prisma.workoutExercise.create({
         data: {
           workoutPlanId: newWorkout.id,
