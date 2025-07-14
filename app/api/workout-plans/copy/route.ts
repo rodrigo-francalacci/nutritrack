@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-// Import the type for WorkoutExercise from the Prisma client
-import type { WorkoutExercise } from '@prisma/client'
+// Import the main 'Prisma' namespace from the client
+import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
+
+// Define the arguments for the query in a constant. This allows us to reuse it for type generation.
+const workoutPlanWithExercisesArgs = Prisma.validator<Prisma.WorkoutPlanArgs>()({
+  include: {
+    exercises: {
+      include: {
+        exercise: true,
+      },
+    },
+  },
+})
+
+// Create a TypeScript type that represents the payload of a WorkoutPlan fetched with the above arguments.
+type WorkoutPlanWithExercises = Prisma.WorkoutPlanGetPayload<
+  typeof workoutPlanWithExercisesArgs
+>
 
 export async function POST(request: Request) {
   try {
@@ -18,16 +34,11 @@ export async function POST(request: Request) {
     }
 
     // Fetch the source workout with all its exercises
-    const sourceWorkout = await prisma.workoutPlan.findUnique({
-      where: { id: sourceWorkoutId },
-      include: {
-        exercises: {
-          include: {
-            exercise: true,
-          },
-        },
-      },
-    })
+    const sourceWorkout: WorkoutPlanWithExercises | null =
+      await prisma.workoutPlan.findUnique({
+        where: { id: sourceWorkoutId },
+        ...workoutPlanWithExercisesArgs, // Spread the arguments here
+      })
 
     if (!sourceWorkout) {
       return NextResponse.json(
@@ -58,9 +69,9 @@ export async function POST(request: Request) {
       },
     })
 
-    // Copy all exercises from the source workout
-    // FIX: Explicitly type the 'exercise' parameter
-    const exercisePromises = sourceWorkout.exercises.map((exercise: WorkoutExercise) =>
+    // Because 'sourceWorkout' is now strongly typed, TypeScript can correctly infer
+    // the type of 'exercise' in the map function without any manual annotation.
+    const exercisePromises = sourceWorkout.exercises.map((exercise) =>
       prisma.workoutExercise.create({
         data: {
           workoutPlanId: newWorkout.id,
@@ -80,13 +91,7 @@ export async function POST(request: Request) {
     // Fetch the complete copied workout
     const copiedWorkout = await prisma.workoutPlan.findUnique({
       where: { id: newWorkout.id },
-      include: {
-        exercises: {
-          include: {
-            exercise: true,
-          },
-        },
-      },
+      ...workoutPlanWithExercisesArgs,
     })
 
     return NextResponse.json(copiedWorkout)
