@@ -97,12 +97,12 @@ export async function GET(
           calories: recipeIngredient.ingredient.calories || 0,
           fiber: recipeIngredient.ingredient.fiber || 0,
           notes: recipeIngredient.ingredient.notes || null,
-           image1: recipeIngredient.ingredient.image1
-        ? getImageUrl(recipeIngredient.ingredient.image1) // <-- CHANGE THIS
-        : null,
-      image2: recipeIngredient.ingredient.image2
-        ? getImageUrl(recipeIngredient.ingredient.image2) // <-- AND CHANGE THIS
-        : null,
+          image1: recipeIngredient.ingredient.image1
+            ? getImageUrl(recipeIngredient.ingredient.image1)
+            : null,
+          image2: recipeIngredient.ingredient.image2
+            ? getImageUrl(recipeIngredient.ingredient.image2)
+            : null,
           customUnits: recipeIngredient.ingredient.customUnits?.map((unit: any) => ({
             id: unit._id,
             createdAt: new Date(unit._createdAt),
@@ -139,84 +139,55 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { name, instructions, photos, scalingFactor } = body
+    const { name, instructions, scalingFactor, ingredients } = body
 
-    // Build update object with only defined values
-    const updateData: any = {
-      _updatedAt: new Date().toISOString(),
+    // Use a transaction to update the main recipe and all ingredients
+    let transaction = sanityClient.transaction()
+
+    // CORRECTED: Added the ': any' type to allow dynamic properties
+    const recipeUpdateData: any = { _updatedAt: new Date().toISOString() }
+    if (name !== undefined) recipeUpdateData.name = name.trim()
+    if (instructions !== undefined)
+      recipeUpdateData.instructions = instructions?.trim() || null
+    if (scalingFactor !== undefined)
+      recipeUpdateData.scalingFactor = parseFloat(scalingFactor) || 1
+
+    transaction = transaction.patch(params.id, p => p.set(recipeUpdateData))
+
+    if (ingredients && Array.isArray(ingredients)) {
+      ingredients.forEach(ing => {
+        if (ing.id) {
+          transaction = transaction.patch(ing.id, p =>
+            p.set({
+              quantity: ing.quantity,
+              unitId: ing.unitId,
+            })
+          )
+        }
+      })
     }
 
-    if (name?.trim()) updateData.name = name.trim()
-    if (instructions !== undefined) updateData.instructions = instructions?.trim() || null
-    if (photos !== undefined) updateData.photos = photos || null
-    if (scalingFactor !== undefined) updateData.scalingFactor = parseFloat(scalingFactor) || 1
+    await transaction.commit()
 
-    const recipe = await sanityClient
-      .patch(params.id)
-      .set(updateData)
-      .commit()
-
-    // Fetch the updated recipe with all relationships
+    // Fetch the fully updated recipe data from Sanity
     const query = `*[_type == "recipe" && _id == $id][0] {
-      _id,
-      _createdAt,
-      _updatedAt,
-      name,
-      instructions,
-      photos,
-      scalingFactor,
+      _id, _createdAt, _updatedAt, name, instructions, photos, scalingFactor,
       "ingredients": *[_type == "recipeIngredient" && recipeId == ^._id] | order(order asc) {
-        _id,
-        _createdAt,
-        _updatedAt,
-        recipeId,
-        ingredientId,
-        quantity,
-        unitId,
-        order,
+        _id, _createdAt, _updatedAt, recipeId, ingredientId, quantity, unitId, order,
         "ingredient": *[_type == "ingredient" && _id == ^.ingredientId][0] {
-          _id,
-          _createdAt,
-          _updatedAt,
-          name,
-          protein,
-          carbs,
-          fats,
-          calories,
-          fiber,
-          notes,
-          image1,
-          image2,
-          "customUnits": *[_type == "customUnit" && ingredientId == ^._id] {
-            _id,
-            _createdAt,
-            _updatedAt,
-            ingredientId,
-            unitName,
-            gramsEquivalent
-          }
+          ...,
+          "customUnits": *[_type == "customUnit" && ingredientId == ^._id]
         },
-        "unit": *[_type == "customUnit" && _id == ^.unitId][0] {
-          _id,
-          _createdAt,
-          _updatedAt,
-          ingredientId,
-          unitName,
-          gramsEquivalent
-        }
+        "unit": *[_type == "customUnit" && _id == ^.unitId][0]
       }
     }`
-
     const updatedRecipe = await sanityClient.fetch(query, { id: params.id })
 
     if (!updatedRecipe) {
-      return NextResponse.json(
-        { error: 'Recipe not found' },
-        { status: 404 }
-      )
+        return NextResponse.json({ error: 'Recipe not found after update' }, { status: 404 });
     }
 
-    // Transform to match expected format
+    // Transformation block to clean the data for the frontend
     const transformedRecipe = {
       id: updatedRecipe._id,
       createdAt: new Date(updatedRecipe._createdAt),
@@ -245,12 +216,8 @@ export async function PUT(
           calories: recipeIngredient.ingredient.calories || 0,
           fiber: recipeIngredient.ingredient.fiber || 0,
           notes: recipeIngredient.ingredient.notes || null,
-           image1: recipeIngredient.ingredient.image1
-        ? getImageUrl(recipeIngredient.ingredient.image1) // <-- CHANGE THIS
-        : null,
-      image2: recipeIngredient.ingredient.image2
-        ? getImageUrl(recipeIngredient.ingredient.image2) // <-- AND CHANGE THIS
-        : null,
+          image1: recipeIngredient.ingredient.image1 ? getImageUrl(recipeIngredient.ingredient.image1) : null,
+          image2: recipeIngredient.ingredient.image2 ? getImageUrl(recipeIngredient.ingredient.image2) : null,
           customUnits: recipeIngredient.ingredient.customUnits?.map((unit: any) => ({
             id: unit._id,
             createdAt: new Date(unit._createdAt),
@@ -272,6 +239,7 @@ export async function PUT(
     }
 
     return NextResponse.json(transformedRecipe)
+
   } catch (error) {
     console.error('Failed to update recipe:', error)
     return NextResponse.json(
