@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
@@ -83,7 +82,7 @@ export function IngredientSearchModal({
   }
 
   const IngredientCard = ({ ingredient }: { ingredient: Ingredient & { customUnits: CustomUnit[] } }) => (
-    <div 
+    <div
       className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-colors group"
       onClick={() => handleSelectIngredient(ingredient.id)}
     >
@@ -111,6 +110,32 @@ export function IngredientSearchModal({
           Add
         </Button>
       </div>
+
+      {/* Images Section: Renders only if at least one image exists */}
+      {(ingredient.image1 || ingredient.image2) && (
+        <div className="flex gap-2 mt-3">
+          {/* Image 1: Renders only if ingredient.image1 is not null */}
+          {ingredient.image1 && (
+            <div className="flex-1">
+              <img
+                src={ingredient.image1 as string}
+                alt={ingredient.name}
+                className="w-full h-48 object-cover rounded-md"
+              />
+            </div>
+          )}
+          {/* Image 2: Renders only if ingredient.image2 is not null */}
+          {ingredient.image2 && (
+            <div className="flex-1">
+              <img
+                src={ingredient.image2 as string}
+                alt={ingredient.name}
+                className="w-full h-48 object-cover rounded-md" 
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Nutritional info */}
       <div className="grid grid-cols-4 gap-2 mt-3 text-xs">
@@ -151,7 +176,8 @@ export function IngredientSearchModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] h-[80vh] flex flex-col">
+      {/* Added h-screen and w-screen for full screen on mobile, and adjusted sm:max-w to sm:max-w-[700px] sm:h-[80vh] */}
+      <DialogContent className="h-screen w-screen sm:max-w-[700px] sm:h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Search className="w-4 h-4 mr-2" />
