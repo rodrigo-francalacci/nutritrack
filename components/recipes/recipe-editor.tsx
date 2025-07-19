@@ -1,20 +1,30 @@
-
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { ArrowLeft, Plus, Trash2, Save, ImageIcon, X, Calculator } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState, useEffect } from 'react'
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Save,
+  Calculator,
+} from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Ingredient, CustomUnit, Recipe, RecipeIngredient } from '@/lib/types/database'
+import {
+  Ingredient,
+  CustomUnit,
+  Recipe,
+  RecipeIngredient,
+} from '@/lib/types/database'
 import Link from 'next/link'
-import { fileToBase64 } from '@/lib/utils/image-utils'
-import Image from 'next/image'
 import { IngredientSearchModal } from './ingredient-search-modal'
-import { IngredientImageSwitcher } from './ingredient-image-switcher' // Adjust path if needed
+import { IngredientImageSwitcher } from './ingredient-image-switcher'
 
 interface RecipeEditorProps {
   recipeId: string
@@ -30,7 +40,9 @@ interface ExtendedRecipe extends Recipe {
 
 export function RecipeEditor({ recipeId }: RecipeEditorProps) {
   const [recipe, setRecipe] = useState<ExtendedRecipe | null>(null)
-  const [allIngredients, setAllIngredients] = useState<(Ingredient & { customUnits: CustomUnit[] })[]>([])
+  const [allIngredients, setAllIngredients] = useState<
+    (Ingredient & { customUnits: CustomUnit[] })[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isIngredientSearchOpen, setIsIngredientSearchOpen] = useState(false)
@@ -70,31 +82,36 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
     }
   }
 
-  const updateRecipe = async (updates: Partial<Recipe>) => {
+  const handleSaveChanges = async () => {
     if (!recipe) return
-
     setSaving(true)
     try {
       const response = await fetch(`/api/recipes/${recipeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({
+          name: recipe.name,
+          instructions: recipe.instructions,
+          scalingFactor: recipe.scalingFactor,
+          ingredients: recipe.ingredients.map(ing => ({
+            id: ing.id,
+            quantity: ing.quantity,
+            unitId: ing.unitId,
+          })),
+        }),
       })
-
-      if (!response.ok) throw new Error('Failed to update recipe')
-      
+      if (!response.ok) throw new Error('Failed to save recipe')
       const updatedRecipe = await response.json()
       setRecipe(updatedRecipe)
-      
       toast({
         title: 'Success',
-        description: 'Recipe updated',
+        description: 'All changes saved!',
       })
     } catch (error) {
-      console.error('Error updating recipe:', error)
+      console.error('Error saving recipe:', error)
       toast({
         title: 'Error',
-        description: 'Failed to update recipe',
+        description: 'Failed to save changes',
         variant: 'destructive',
       })
     } finally {
@@ -104,7 +121,6 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
 
   const addIngredient = async (ingredientId: string) => {
     try {
-      // Validate inputs
       if (!ingredientId || !recipeId) {
         throw new Error('Missing required data')
       }
@@ -115,7 +131,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
         body: JSON.stringify({
           recipeId,
           ingredientId,
-          quantity: 100, // Default 100g
+          quantity: 100,
           unitId: null,
         }),
       })
@@ -124,12 +140,9 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
         throw new Error(errorData.error || 'Failed to add ingredient')
       }
-      
-      const newIngredient = await response.json()
-      console.log('Added ingredient:', newIngredient)
-      
-      await fetchRecipe() // Refresh recipe data
-      
+
+      await fetchRecipe()
+
       toast({
         title: 'Success',
         description: 'Ingredient added to recipe',
@@ -138,73 +151,30 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
       console.error('Error adding ingredient:', error)
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to add ingredient',
+        description:
+          error instanceof Error ? error.message : 'Failed to add ingredient',
         variant: 'destructive',
       })
     }
   }
 
-  // Get IDs of ingredients already added to recipe
   const getAddedIngredientIds = () => {
     return recipe?.ingredients?.map(ri => ri.ingredientId) || []
   }
 
-  // FIXED: Update ingredient without refetching entire recipe to preserve order
-  const updateRecipeIngredient = async (recipeIngredientId: string, updates: { quantity?: number; unitId?: string | null }) => {
-    try {
-      const response = await fetch(`/api/recipe-ingredients/${recipeIngredientId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
-
-      if (!response.ok) throw new Error('Failed to update ingredient')
-      
-      const updatedIngredient = await response.json()
-      
-      // FIXED: Update the state directly instead of refetching to preserve order
-      setRecipe(prevRecipe => {
-        if (!prevRecipe) return null;
-
-        const updatedIngredients = prevRecipe.ingredients.map(ingredient => {
-          if (ingredient.id === recipeIngredientId) {
-            // Perform a more careful, explicit merge to preserve the nested ingredient object
-            return {
-              ...ingredient, // Keep the original data (including the nested ingredient object)
-              quantity: updatedIngredient.quantity, // Only update the quantity from the API response
-              unitId: updatedIngredient.unitId,     // Only update the unitId
-              unit: updatedIngredient.unit,         // And the nested unit object
-            };
-          }
-          return ingredient;
-        });
-
-        return {
-          ...prevRecipe,
-          ingredients: updatedIngredients,
-        };
-      });
-
-    } catch (error) {
-      console.error('Error updating recipe ingredient:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to update ingredient',
-        variant: 'destructive',
-      })
-    }
-  }
-
   const removeRecipeIngredient = async (recipeIngredientId: string) => {
     try {
-      const response = await fetch(`/api/recipe-ingredients/${recipeIngredientId}`, {
-        method: 'DELETE',
-      })
+      const response = await fetch(
+        `/api/recipe-ingredients/${recipeIngredientId}`,
+        {
+          method: 'DELETE',
+        }
+      )
 
       if (!response.ok) throw new Error('Failed to remove ingredient')
-      
-      await fetchRecipe() // Refresh recipe data
-      
+
+      await fetchRecipe()
+
       toast({
         title: 'Success',
         description: 'Ingredient removed from recipe',
@@ -232,15 +202,13 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
       const ingredient = recipeIngredient.ingredient
       let quantityInGrams = recipeIngredient.quantity
 
-      // Convert to grams if using custom unit
       if (recipeIngredient.unit) {
-        quantityInGrams = recipeIngredient.quantity * recipeIngredient.unit.gramsEquivalent
+        quantityInGrams =
+          recipeIngredient.quantity * recipeIngredient.unit.gramsEquivalent
       }
 
-      // Apply scaling factor
       quantityInGrams *= recipe.scalingFactor
 
-      // Calculate nutritional values
       totalCalories += ingredient.calories * quantityInGrams
       totalProtein += ingredient.protein * quantityInGrams
       totalCarbs += ingredient.carbs * quantityInGrams
@@ -261,12 +229,11 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
     const ingredient = recipeIngredient.ingredient
     let quantityInGrams = recipeIngredient.quantity
 
-    // Convert to grams if using custom unit
     if (recipeIngredient.unit) {
-      quantityInGrams = recipeIngredient.quantity * recipeIngredient.unit.gramsEquivalent
+      quantityInGrams =
+        recipeIngredient.quantity * recipeIngredient.unit.gramsEquivalent
     }
 
-    // Apply scaling factor
     quantityInGrams *= recipe?.scalingFactor || 1
 
     return {
@@ -275,6 +242,44 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
       carbs: Math.round(ingredient.carbs * quantityInGrams * 100) / 100,
       fats: Math.round(ingredient.fats * quantityInGrams * 100) / 100,
     }
+  }
+
+  // UPDATED: handleIngredientChange function with the bug fix
+  const handleIngredientChange = (
+    recipeIngredientId: string,
+    updates: { quantity?: number; unitId?: string | null }
+  ) => {
+    setRecipe(prevRecipe => {
+      if (!prevRecipe) return null
+      const updatedIngredients = prevRecipe.ingredients.map(ingredient => {
+        if (ingredient.id === recipeIngredientId) {
+          // This block contains the corrected logic
+          const newUnit =
+            updates.unitId !== undefined // Check if a unitId was passed in the update
+              ? updates.unitId === null // Check if the new unit is 'grams' (represented by null)
+                ? null // If yes, the new unit object is explicitly null
+                : ingredient.ingredient.customUnits.find( // Otherwise, find the matching custom unit
+                    u => u.id === updates.unitId
+                  )
+              : ingredient.unit // If no unitId was passed, keep the existing unit object
+
+          return {
+            ...ingredient,
+            quantity:
+              updates.quantity !== undefined
+                ? updates.quantity
+                : ingredient.quantity,
+            unitId:
+              updates.unitId !== undefined
+                ? updates.unitId
+                : ingredient.unitId,
+            unit: newUnit === undefined ? ingredient.unit : newUnit || null,
+          }
+        }
+        return ingredient
+      })
+      return { ...prevRecipe, ingredients: updatedIngredients }
+    })
   }
 
   if (loading) {
@@ -303,7 +308,6 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
 
   return (
     <div className="win98-container">
-      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <Link href="/recipes">
           <button className="win98-button">
@@ -311,69 +315,74 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
             Back to Recipes
           </button>
         </Link>
-        <button 
-          onClick={() => updateRecipe({ 
-            name: recipe.name, 
-            instructions: recipe.instructions,
-            scalingFactor: recipe.scalingFactor 
-          })}
+        <button
+          onClick={handleSaveChanges}
           disabled={saving}
           className="win98-button"
         >
           <Save className="w-3 h-3 mr-1" />
-          {saving ? 'Saving...' : 'Save Recipe'}
+          {saving ? 'Saving...' : 'Save All Changes'}
         </button>
       </div>
 
-      {/* Recipe Details */}
       <div className="win98-panel mb-2">
-        <div className="win98-title-bar mb-1">
-          Recipe Details
-        </div>
+        <div className="win98-title-bar mb-1">Recipe Details</div>
         <div className="win98-form-container">
           <div className="win98-form-row">
-            <label htmlFor="recipe-name" className="win98-label">Recipe Name</label>
+            <label htmlFor="recipe-name" className="win98-label">
+              Recipe Name
+            </label>
             <input
               id="recipe-name"
               value={recipe.name}
-              onChange={(e) => setRecipe(prev => prev ? { ...prev, name: e.target.value } : null)}
-              onBlur={() => updateRecipe({ name: recipe.name })}
+              onChange={e =>
+                setRecipe(prev => (prev ? { ...prev, name: e.target.value } : null))
+              }
               placeholder="Enter recipe name"
               className="win98-input"
             />
           </div>
-
           <div className="win98-form-row">
-            <label htmlFor="scaling-factor" className="win98-label">Scaling Factor</label>
+            <label htmlFor="scaling-factor" className="win98-label">
+              Scaling Factor
+            </label>
             <input
               id="scaling-factor"
               type="number"
               step="0.1"
               min="0"
               value={recipe.scalingFactor}
-              onChange={(e) => setRecipe(prev => prev ? { ...prev, scalingFactor: parseFloat(e.target.value) || 1 } : null)}
-              onBlur={() => updateRecipe({ scalingFactor: recipe.scalingFactor })}
+              onChange={e =>
+                setRecipe(prev =>
+                  prev
+                    ? { ...prev, scalingFactor: parseFloat(e.target.value) || 1 }
+                    : null
+                )
+              }
               placeholder="1.0"
               className="win98-input"
             />
           </div>
-
           <div className="win98-form-row">
-            <label htmlFor="instructions" className="win98-label">Instructions</label>
+            <label htmlFor="instructions" className="win98-label">
+              Instructions
+            </label>
             <textarea
               id="instructions"
               value={recipe.instructions || ''}
-              onChange={(e) => setRecipe(prev => prev ? { ...prev, instructions: e.target.value } : null)}
-              onBlur={() => updateRecipe({ instructions: recipe.instructions })}
+              onChange={e =>
+                setRecipe(prev =>
+                  prev ? { ...prev, instructions: e.target.value } : null
+                )
+              }
               placeholder="Enter cooking instructions..."
               className="win98-input win98-textarea"
-              rows={15}
+              rows={6}
             />
           </div>
         </div>
       </div>
 
-      {/* Nutritional Summary */}
       <div className="win98-panel mb-2">
         <div className="win98-title-bar mb-1">
           <Calculator className="w-3 h-3 mr-1" />
@@ -403,145 +412,143 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
         </div>
       </div>
 
-          {/* Ingredients */}
-<div className="win98-panel">
-  <div className="win98-title-bar mb-1">Ingredients</div>
-  <div className="win98-ingredients-container">
-    {/* Add Ingredient */}
-    <div className="win98-form-row">
-      <label className="win98-label">Add Ingredient</label>
-      <button
-        onClick={() => setIsIngredientSearchOpen(true)}
-        className="win98-button win98-add-ingredient-button"
-        disabled={
-          allIngredients.length === 0 ||
-          getAddedIngredientIds().length === allIngredients.length
-        }
-      >
-        <Plus className="w-3 h-3 mr-1" />
-        {allIngredients.length === 0
-          ? 'No ingredients available'
-          : getAddedIngredientIds().length === allIngredients.length
-          ? 'All ingredients added'
-          : `Search ingredients (${
-              allIngredients.length - getAddedIngredientIds().length
-            } available)`}
-      </button>
-    </div>
-
-    {/* Ingredient List - UPDATED FOR RESPONSIVE LAYOUT */}
-    <div className="win98-ingredients-list space-y-4">
-      {recipe.ingredients.map(recipeIngredient => {
-        const contribution = calculateIngredientContribution(recipeIngredient)
-        return (
-          <div
-            key={`${recipeIngredient.id}-${recipeIngredient.order}`}
-            className="win98-ingredient-row flex flex-col md:flex-row md:items-start gap-3"
-          >
-            {/* ====== DETAILS CONTAINER (DOM Order First) ====== */}
-            <div className="flex-grow w-full md:order-2">
-              {/* Top row: Name and controls */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div className="win98-ingredient-name font-semibold text-lg">
-                  {recipeIngredient.ingredient.name}
-                </div>
-                <div className="win98-ingredient-controls flex-shrink-0 flex items-center gap-1">
-                  <input
-                    type="number"
-                    value={recipeIngredient.quantity}
-                    onChange={e =>
-                      updateRecipeIngredient(recipeIngredient.id, {
-                        quantity: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Qty"
-                    className="win98-input win98-quantity-input w-20"
-                  />
-                  <Select
-                    value={recipeIngredient.unitId || 'grams'}
-                    onValueChange={value =>
-                      updateRecipeIngredient(recipeIngredient.id, {
-                        unitId: value === 'grams' ? null : value,
-                      })
-                    }
-                  >
-                    <SelectTrigger className="win98-select win98-unit-select w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="grams">grams</SelectItem>
-                      {recipeIngredient.ingredient.customUnits?.map(unit => (
-                        <SelectItem key={unit.id} value={unit.id}>
-                          {unit.unitName}
-                        </SelectItem>
-                      )) || []}
-                    </SelectContent>
-                  </Select>
-                  <button
-                    onClick={() => removeRecipeIngredient(recipeIngredient.id)}
-                    className="win98-button win98-delete-button"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Bottom row: Nutritional contribution */}
-              <div className="win98-nutrition-contribution flex items-center justify-between mt-2">
-                <div className="win98-contribution-item">
-                  <span className="win98-contribution-value">
-                    {contribution.calories}
-                  </span>
-                  <span className="win98-contribution-label ml-1">cal</span>
-                </div>
-                <div className="win98-contribution-item">
-                  <span className="win98-contribution-value">
-                    {contribution.protein}g
-                  </span>
-                  <span className="win98-contribution-label ml-1">
-                    protein
-                  </span>
-                </div>
-                <div className="win98-contribution-item">
-                  <span className="win98-contribution-value">
-                    {contribution.carbs}g
-                  </span>
-                  <span className="win98-contribution-label ml-1">
-                    carbs
-                  </span>
-                </div>
-                <div className="win98-contribution-item">
-                  <span className="win98-contribution-value">
-                    {contribution.fats}g
-                  </span>
-                  <span className="win98-contribution-label ml-1">fats</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ====== IMAGE CONTAINER (DOM Order Second) ====== */}
-            <div className="flex-shrink-0 w-full md:w-auto md:order-1">
-            <IngredientImageSwitcher
-              image1={recipeIngredient.ingredient.image1 as string}
-              image2={recipeIngredient.ingredient.image2 as string}
-              alt={recipeIngredient.ingredient.name}
-            />
+      <div className="win98-panel">
+        <div className="win98-title-bar mb-1">Ingredients</div>
+        <div className="win98-ingredients-container">
+          <div className="win98-form-row">
+            <label className="win98-label">Add Ingredient</label>
+            <button
+              onClick={() => setIsIngredientSearchOpen(true)}
+              className="win98-button win98-add-ingredient-button"
+              disabled={
+                allIngredients.length === 0 ||
+                getAddedIngredientIds().length === allIngredients.length
+              }
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              {allIngredients.length === 0
+                ? 'No ingredients available'
+                : getAddedIngredientIds().length === allIngredients.length
+                ? 'All ingredients added'
+                : `Search ingredients (${
+                    allIngredients.length - getAddedIngredientIds().length
+                  } available)`}
+            </button>
           </div>
-          </div>
-        )
-      })}
 
-      {recipe.ingredients.length === 0 && (
-        <div className="win98-empty-state">
-          No ingredients added yet. Click the search button above to add
-          ingredients.
+          <div className="win98-ingredients-list space-y-4">
+            {recipe.ingredients.map(recipeIngredient => {
+              const contribution =
+                calculateIngredientContribution(recipeIngredient)
+              return (
+                <div
+                  key={recipeIngredient.id}
+                  className="win98-ingredient-row flex flex-col md:flex-row md:items-start gap-3"
+                >
+                  <div className="flex-grow w-full md:order-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div className="win98-ingredient-name font-semibold text-lg">
+                        {recipeIngredient.ingredient.name}
+                      </div>
+                      <div className="win98-ingredient-controls flex-shrink-0 flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={recipeIngredient.quantity}
+                          onChange={e =>
+                            handleIngredientChange(recipeIngredient.id, {
+                              quantity: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="Qty"
+                          className="win98-input win98-quantity-input w-20"
+                        />
+                        <Select
+                          value={recipeIngredient.unitId || 'grams'}
+                          onValueChange={value =>
+                            handleIngredientChange(recipeIngredient.id, {
+                              unitId: value === 'grams' ? null : value,
+                            })
+                          }
+                        >
+                          <SelectTrigger className="win98-select win98-unit-select w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="grams">grams</SelectItem>
+                            {recipeIngredient.ingredient.customUnits?.map(
+                              unit => (
+                                <SelectItem key={unit.id} value={unit.id}>
+                                  {unit.unitName}
+                                </SelectItem>
+                              )
+                            ) || []}
+                          </SelectContent>
+                        </Select>
+                        <button
+                          onClick={() =>
+                            removeRecipeIngredient(recipeIngredient.id)
+                          }
+                          className="win98-button win98-delete-button"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="win98-nutrition-contribution flex items-center justify-between mt-2">
+                      <div className="win98-contribution-item">
+                        <span className="win98-contribution-value">
+                          {contribution.calories}
+                        </span>
+                        <span className="win98-contribution-label ml-1">
+                          cal
+                        </span>
+                      </div>
+                      <div className="win98-contribution-item">
+                        <span className="win98-contribution-value">
+                          {contribution.protein}g
+                        </span>
+                        <span className="win98-contribution-label ml-1">
+                          protein
+                        </span>
+                      </div>
+                      <div className="win98-contribution-item">
+                        <span className="win98-contribution-value">
+                          {contribution.carbs}g
+                        </span>
+                        <span className="win98-contribution-label ml-1">
+                          carbs
+                        </span>
+                      </div>
+                      <div className="win98-contribution-item">
+                        <span className="win98-contribution-value">
+                          {contribution.fats}g
+                        </span>
+                        <span className="win98-contribution-label ml-1">
+                          fats
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 w-full md:w-auto md:order-1">
+                    <IngredientImageSwitcher
+                      image1={recipeIngredient.ingredient.image1 as string}
+                      image2={recipeIngredient.ingredient.image2 as string}
+                      alt={recipeIngredient.ingredient.name}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+            {recipe.ingredients.length === 0 && (
+              <div className="win98-empty-state">
+                No ingredients added yet. Click the search button above to add
+                ingredients.
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </div>
-  </div>
-</div>
+      </div>
 
-      {/* Ingredient Search Modal */}
       <IngredientSearchModal
         isOpen={isIngredientSearchOpen}
         onClose={() => setIsIngredientSearchOpen(false)}
