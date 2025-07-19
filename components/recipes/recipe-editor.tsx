@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { fileToBase64 } from '@/lib/utils/image-utils'
 import Image from 'next/image'
 import { IngredientSearchModal } from './ingredient-search-modal'
+import { IngredientImageSwitcher } from './ingredient-image-switcher' // Adjust path if needed
 
 interface RecipeEditorProps {
   recipeId: string
@@ -163,19 +164,26 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
       
       // FIXED: Update the state directly instead of refetching to preserve order
       setRecipe(prevRecipe => {
-        if (!prevRecipe) return null
-        
-        const updatedIngredients = prevRecipe.ingredients.map(ingredient => 
-          ingredient.id === recipeIngredientId 
-            ? { ...ingredient, ...updatedIngredient }
-            : ingredient
-        )
-        
+        if (!prevRecipe) return null;
+
+        const updatedIngredients = prevRecipe.ingredients.map(ingredient => {
+          if (ingredient.id === recipeIngredientId) {
+            // Perform a more careful, explicit merge to preserve the nested ingredient object
+            return {
+              ...ingredient, // Keep the original data (including the nested ingredient object)
+              quantity: updatedIngredient.quantity, // Only update the quantity from the API response
+              unitId: updatedIngredient.unitId,     // Only update the unitId
+              unit: updatedIngredient.unit,         // And the nested unit object
+            };
+          }
+          return ingredient;
+        });
+
         return {
           ...prevRecipe,
-          ingredients: updatedIngredients
-        }
-      })
+          ingredients: updatedIngredients,
+        };
+      });
 
     } catch (error) {
       console.error('Error updating recipe ingredient:', error)
@@ -341,7 +349,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
               id="scaling-factor"
               type="number"
               step="0.1"
-              min="0.1"
+              min="0"
               value={recipe.scalingFactor}
               onChange={(e) => setRecipe(prev => prev ? { ...prev, scalingFactor: parseFloat(e.target.value) || 1 } : null)}
               onBlur={() => updateRecipe({ scalingFactor: recipe.scalingFactor })}
@@ -359,7 +367,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
               onBlur={() => updateRecipe({ instructions: recipe.instructions })}
               placeholder="Enter cooking instructions..."
               className="win98-input win98-textarea"
-              rows={3}
+              rows={15}
             />
           </div>
         </div>
@@ -395,111 +403,143 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
         </div>
       </div>
 
-      {/* Ingredients */}
-      <div className="win98-panel">
-        <div className="win98-title-bar mb-1">
-          Ingredients
-        </div>
-        <div className="win98-ingredients-container">
-          {/* Add Ingredient */}
-          <div className="win98-form-row">
-            <label className="win98-label">Add Ingredient</label>
-            <button
-              onClick={() => setIsIngredientSearchOpen(true)}
-              className="win98-button win98-add-ingredient-button"
-              disabled={allIngredients.length === 0 || getAddedIngredientIds().length === allIngredients.length}
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              {allIngredients.length === 0 
-                ? 'No ingredients available'
-                : getAddedIngredientIds().length === allIngredients.length
-                ? 'All ingredients added'
-                : `Search ingredients (${allIngredients.length - getAddedIngredientIds().length} available)`
-              }
-            </button>
-          </div>
+          {/* Ingredients */}
+<div className="win98-panel">
+  <div className="win98-title-bar mb-1">Ingredients</div>
+  <div className="win98-ingredients-container">
+    {/* Add Ingredient */}
+    <div className="win98-form-row">
+      <label className="win98-label">Add Ingredient</label>
+      <button
+        onClick={() => setIsIngredientSearchOpen(true)}
+        className="win98-button win98-add-ingredient-button"
+        disabled={
+          allIngredients.length === 0 ||
+          getAddedIngredientIds().length === allIngredients.length
+        }
+      >
+        <Plus className="w-3 h-3 mr-1" />
+        {allIngredients.length === 0
+          ? 'No ingredients available'
+          : getAddedIngredientIds().length === allIngredients.length
+          ? 'All ingredients added'
+          : `Search ingredients (${
+              allIngredients.length - getAddedIngredientIds().length
+            } available)`}
+      </button>
+    </div>
 
-          {/* Ingredient List - FIXED: Using stable keys based on ID and order */}
-          <div className="win98-ingredients-list">
-            {recipe.ingredients.map((recipeIngredient) => {
-              const contribution = calculateIngredientContribution(recipeIngredient)
-              return (
-                <div key={`${recipeIngredient.id}-${recipeIngredient.order}`} className="win98-ingredient-row">
-                  <div className="win98-ingredient-main">
-                    <div className="win98-ingredient-name">
-                      {recipeIngredient.ingredient.name}
-                    </div>
-                    
-                    <div className="win98-ingredient-controls">
-                      <input
-                        type="number"
-                        value={recipeIngredient.quantity}
-                        onChange={(e) => updateRecipeIngredient(recipeIngredient.id, { 
-                          quantity: parseFloat(e.target.value) || 0 
-                        })}
-                        placeholder="Qty"
-                        className="win98-input win98-quantity-input"
-                      />
-
-                      <Select
-                        value={recipeIngredient.unitId || 'grams'}
-                        onValueChange={(value) => updateRecipeIngredient(recipeIngredient.id, { 
-                          unitId: value === 'grams' ? null : value 
-                        })}
-                      >
-                        <SelectTrigger className="win98-select win98-unit-select">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="grams">grams</SelectItem>
-                          {recipeIngredient.ingredient.customUnits?.map((unit) => (
-                            <SelectItem key={unit.id} value={unit.id}>
-                              {unit.unitName}
-                            </SelectItem>
-                          )) || []}
-                        </SelectContent>
-                      </Select>
-
-                      <button
-                        onClick={() => removeRecipeIngredient(recipeIngredient.id)}
-                        className="win98-button win98-delete-button"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Nutritional Contribution */}
-                  <div className="win98-nutrition-contribution">
-                    <div className="win98-contribution-item">
-                      <span className="win98-contribution-value">{contribution.calories}</span>
-                      <span className="win98-contribution-label">cal</span>
-                    </div>
-                    <div className="win98-contribution-item">
-                      <span className="win98-contribution-value">{contribution.protein}g</span>
-                      <span className="win98-contribution-label">protein</span>
-                    </div>
-                    <div className="win98-contribution-item">
-                      <span className="win98-contribution-value">{contribution.carbs}g</span>
-                      <span className="win98-contribution-label">carbs</span>
-                    </div>
-                    <div className="win98-contribution-item">
-                      <span className="win98-contribution-value">{contribution.fats}g</span>
-                      <span className="win98-contribution-label">fats</span>
-                    </div>
-                  </div>
+    {/* Ingredient List - UPDATED FOR RESPONSIVE LAYOUT */}
+    <div className="win98-ingredients-list space-y-4">
+      {recipe.ingredients.map(recipeIngredient => {
+        const contribution = calculateIngredientContribution(recipeIngredient)
+        return (
+          <div
+            key={`${recipeIngredient.id}-${recipeIngredient.order}`}
+            className="win98-ingredient-row flex flex-col md:flex-row md:items-start gap-3"
+          >
+            {/* ====== DETAILS CONTAINER (DOM Order First) ====== */}
+            <div className="flex-grow w-full md:order-2">
+              {/* Top row: Name and controls */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div className="win98-ingredient-name font-semibold text-lg">
+                  {recipeIngredient.ingredient.name}
                 </div>
-              )
-            })}
-
-            {recipe.ingredients.length === 0 && (
-              <div className="win98-empty-state">
-                No ingredients added yet. Click the search button above to add ingredients.
+                <div className="win98-ingredient-controls flex-shrink-0 flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={recipeIngredient.quantity}
+                    onChange={e =>
+                      updateRecipeIngredient(recipeIngredient.id, {
+                        quantity: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="Qty"
+                    className="win98-input win98-quantity-input w-20"
+                  />
+                  <Select
+                    value={recipeIngredient.unitId || 'grams'}
+                    onValueChange={value =>
+                      updateRecipeIngredient(recipeIngredient.id, {
+                        unitId: value === 'grams' ? null : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="win98-select win98-unit-select w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grams">grams</SelectItem>
+                      {recipeIngredient.ingredient.customUnits?.map(unit => (
+                        <SelectItem key={unit.id} value={unit.id}>
+                          {unit.unitName}
+                        </SelectItem>
+                      )) || []}
+                    </SelectContent>
+                  </Select>
+                  <button
+                    onClick={() => removeRecipeIngredient(recipeIngredient.id)}
+                    className="win98-button win98-delete-button"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            )}
+
+              {/* Bottom row: Nutritional contribution */}
+              <div className="win98-nutrition-contribution flex items-center justify-between mt-2">
+                <div className="win98-contribution-item">
+                  <span className="win98-contribution-value">
+                    {contribution.calories}
+                  </span>
+                  <span className="win98-contribution-label ml-1">cal</span>
+                </div>
+                <div className="win98-contribution-item">
+                  <span className="win98-contribution-value">
+                    {contribution.protein}g
+                  </span>
+                  <span className="win98-contribution-label ml-1">
+                    protein
+                  </span>
+                </div>
+                <div className="win98-contribution-item">
+                  <span className="win98-contribution-value">
+                    {contribution.carbs}g
+                  </span>
+                  <span className="win98-contribution-label ml-1">
+                    carbs
+                  </span>
+                </div>
+                <div className="win98-contribution-item">
+                  <span className="win98-contribution-value">
+                    {contribution.fats}g
+                  </span>
+                  <span className="win98-contribution-label ml-1">fats</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ====== IMAGE CONTAINER (DOM Order Second) ====== */}
+            <div className="flex-shrink-0 w-full md:w-auto md:order-1">
+            <IngredientImageSwitcher
+              image1={recipeIngredient.ingredient.image1 as string}
+              image2={recipeIngredient.ingredient.image2 as string}
+              alt={recipeIngredient.ingredient.name}
+            />
           </div>
+          </div>
+        )
+      })}
+
+      {recipe.ingredients.length === 0 && (
+        <div className="win98-empty-state">
+          No ingredients added yet. Click the search button above to add
+          ingredients.
         </div>
-      </div>
+      )}
+    </div>
+  </div>
+</div>
 
       {/* Ingredient Search Modal */}
       <IngredientSearchModal
