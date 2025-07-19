@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server'
-import { sanityClient } from '@/lib/sanity'
+import { sanityClient, getImageUrl } from '@/lib/sanity'; // <-- ADD getImageUrl HERE
 
 export const dynamic = 'force-dynamic'
 
@@ -97,8 +97,12 @@ export async function GET(
           calories: recipeIngredient.ingredient.calories || 0,
           fiber: recipeIngredient.ingredient.fiber || 0,
           notes: recipeIngredient.ingredient.notes || null,
-          image1: recipeIngredient.ingredient.image1 || null,
-          image2: recipeIngredient.ingredient.image2 || null,
+           image1: recipeIngredient.ingredient.image1
+        ? getImageUrl(recipeIngredient.ingredient.image1) // <-- CHANGE THIS
+        : null,
+      image2: recipeIngredient.ingredient.image2
+        ? getImageUrl(recipeIngredient.ingredient.image2) // <-- AND CHANGE THIS
+        : null,
           customUnits: recipeIngredient.ingredient.customUnits?.map((unit: any) => ({
             id: unit._id,
             createdAt: new Date(unit._createdAt),
@@ -241,8 +245,12 @@ export async function PUT(
           calories: recipeIngredient.ingredient.calories || 0,
           fiber: recipeIngredient.ingredient.fiber || 0,
           notes: recipeIngredient.ingredient.notes || null,
-          image1: recipeIngredient.ingredient.image1 || null,
-          image2: recipeIngredient.ingredient.image2 || null,
+           image1: recipeIngredient.ingredient.image1
+        ? getImageUrl(recipeIngredient.ingredient.image1) // <-- CHANGE THIS
+        : null,
+      image2: recipeIngredient.ingredient.image2
+        ? getImageUrl(recipeIngredient.ingredient.image2) // <-- AND CHANGE THIS
+        : null,
           customUnits: recipeIngredient.ingredient.customUnits?.map((unit: any) => ({
             id: unit._id,
             createdAt: new Date(unit._createdAt),
