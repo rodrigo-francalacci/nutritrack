@@ -32,6 +32,9 @@ export function IngredientSearchModal({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
+
+  console.log(allIngredients)
+
   // Clear search when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -88,7 +91,7 @@ export function IngredientSearchModal({
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="font-medium text-gray-900 group-hover:text-blue-700">
+         <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">
             {ingredient.name}
           </h3>
           {ingredient.notes && (
@@ -200,7 +203,7 @@ export function IngredientSearchModal({
           </div>
 
           {/* Category Filters */}
-          {categories.length > 0 && (
+          {/* {categories.length > 0 && (
             <div className="flex flex-wrap gap-2">
               <Button
                 variant={selectedCategory === 'all' ? 'default' : 'outline'}
@@ -220,7 +223,7 @@ export function IngredientSearchModal({
                 </Button>
               ))}
             </div>
-          )}
+          )} */}
 
           {/* Results Count */}
           <div className="text-sm text-gray-600">
