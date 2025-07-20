@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from 'next/link'
@@ -19,23 +18,25 @@ export function Navigation() {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Ingredients', href: '/ingredients', icon: Utensils },
     { name: 'Recipes', href: '/recipes', icon: ChefHat },
-    { name: 'Exercises', href: '/exercises', icon: Dumbbell },
+/*     { name: 'Exercises', href: '/exercises', icon: Dumbbell }, */
     { name: 'Habits', href: '/habits', icon: CheckSquare },
     { name: 'Daily Tracking', href: '/daily-tracking', icon: TrendingUp },
   ]
 
   return (
-    <nav className="win98-nav">
+    // UPDATED: Added flexbox utilities for centering and responsive wrapping
+    <nav className="win98-nav flex justify-center flex-wrap gap-1 p-1">
       {navItems.map((item) => {
         const Icon = item.icon
         return (
           <Link
             key={item.name}
             href={item.href}
+            // The active state is handled by your existing win98-nav-item class
             className={`win98-nav-item ${pathname === item.href ? 'active' : ''}`}
           >
             <Icon className="w-3 h-3" />
-            {item.name}
+            <span>{item.name}</span>
           </Link>
         )
       })}
